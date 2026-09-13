@@ -1,0 +1,159 @@
+{
+  "_comment": "Expected results for deterministic tests. Engines must reproduce these values from faers_demo.csv and dossier_outline.json. Do not hard-code these in frontend code.",
+
+  "faers_fixture": {
+    "file": "faers_demo.csv",
+    "total_raw_rows": 117,
+    "total_unique_cases_after_dedup": 116,
+    "_dedup_note": "caseid=10000001 appears with caseversion 1 and 2; engine must keep only caseversion=2 (latest). One row is dropped → 116 unique cases.",
+    "distinct_drugs": ["DRUGALPHA", "DRUGBETA", "DRUGGAMMA"],
+    "distinct_events_raw": [
+      "headache",
+      "severe headache",
+      "nausea",
+      "liver injury",
+      "hepatic failure",
+      "fatigue",
+      "rash",
+      "vomiting"
+    ],
+    "alias_pairs": [
+      {
+        "raw_aliases": ["headache", "severe headache"],
+        "preferred_term": "Headache",
+        "meddra_code": "10019211"
+      },
+      {
+        "raw_aliases": ["liver injury", "hepatic failure"],
+        "preferred_term": "Hepatic disorder",
+        "meddra_code": "10019692"
+      }
+    ]
+  },
+
+  "signal_detection": {
+    "algorithm": "prr",
+    "algorithm_version": "0.1.0",
+    "prr_threshold": 2.0,
+    "min_cases": 3,
+    "disclaimer": "These results are generated from post-marketing spontaneous reports and do not constitute proof of causality. For investigational use only.",
+
+    "contingency_table_DRUGALPHA_HepaticDisorder": {
+      "_note": "After dedup (116 cases) and alias merge. liver_injury(28)+hepatic_failure(6)=34 raw rows for DRUGALPHA; after latest-version dedup ≈34 cases contribute.",
+      "drug": "DRUGALPHA",
+      "event": "Hepatic disorder",
+      "a_min": 30,
+      "a_max": 36,
+      "_a_note": "Drug+Event cases. Exact value depends on dedup of version rows; 34 expected.",
+      "prr_expected_min": 5.0,
+      "prr_expected_max": 20.0,
+      "threshold_status": "above",
+      "severity": "critical",
+      "rank": 1
+    },
+
+    "expected_top3_drugs_by_signal_count": ["DRUGALPHA", "DRUGBETA", "DRUGGAMMA"],
+    "expected_signals_above_threshold_min": 1,
+    "_signals_note": "At minimum DRUGALPHA+HepaticDisorder must clear PRR >= 2.0 with a >= 3."
+  },
+
+  "dossier_fixture": {
+    "file": "dossier_outline.json",
+    "total_requirements": 18,
+    "total_sections": 18,
+    "status_counts": {
+      "complete": 8,
+      "missing": 3,
+      "ambiguous": 3,
+      "optional": 4,
+      "review_needed": 1
+    },
+    "_status_note": "optional sections are excluded from mandatory scoring denominator.",
+    "mandatory_requirements": 13,
+    "optional_requirements": 5
+  },
+
+  "readiness_assessment": {
+    "algorithm_version": "0.1.0",
+    "_scoring_note": "Score = complete_mandatory / total_mandatory per module and overall. Ambiguous counts as 0.5 * complete towards score.",
+
+    "expected_overall_score_min": 0.45,
+    "expected_overall_score_max": 0.75,
+    "_overall_note": "8 complete + ~1.5 from 3 ambiguous = ~9.5 out of 13 mandatory = ~0.73. Actual depends on engine weighting.",
+
+    "expected_module_scores": {
+      "1": {
+        "mandatory_count": 3,
+        "complete_count_min": 1,
+        "complete_count_max": 1,
+        "score_min": 0.3,
+        "score_max": 0.7,
+        "_note": "SEC-1.2 complete, SEC-1.3.1 review_needed, SEC-1.3.2 missing."
+      },
+      "2": {
+        "mandatory_count": 4,
+        "complete_count_min": 2,
+        "complete_count_max": 2,
+        "_note": "SEC-2.4 complete, SEC-2.7 complete, SEC-2.5 ambiguous, SEC-2.6 ambiguous."
+      },
+      "3": {
+        "mandatory_count": 3,
+        "complete_count_min": 2,
+        "complete_count_max": 2,
+        "_note": "SEC-3.2.S.1 complete, SEC-3.2.P.1 complete, SEC-3.2.S.3 missing. SEC-3.2.S.2 ambiguous. SEC-3.2.P.2 optional (excluded)."
+      },
+      "4": {
+        "mandatory_count": 2,
+        "complete_count_min": 2,
+        "complete_count_max": 2,
+        "_note": "SEC-4.2.1 and SEC-4.2.2 both complete. SEC-4.2.3 optional (excluded)."
+      },
+      "5": {
+        "mandatory_count": 2,
+        "complete_count_min": 1,
+        "complete_count_max": 1,
+        "_note": "SEC-5.3.5 complete, SEC-5.3.1 missing. SEC-5.3.6 optional (excluded)."
+      }
+    },
+
+    "expected_gaps": [
+      {
+        "requirement_id": "CTD-1.3.2",
+        "severity": "high",
+        "_note": "Package Leaflet is mandatory and missing entirely."
+      },
+      {
+        "requirement_id": "CTD-3.2.S.3",
+        "severity": "high",
+        "_note": "Drug Substance Characterisation is mandatory and missing."
+      },
+      {
+        "requirement_id": "CTD-5.3.1",
+        "severity": "high",
+        "_note": "Biopharmaceutics studies are mandatory and missing."
+      },
+      {
+        "requirement_id": "CTD-1.3.1",
+        "severity": "medium",
+        "_note": "SmPC is review_needed — present but flagged."
+      },
+      {
+        "requirement_id": "CTD-2.5",
+        "severity": "medium",
+        "_note": "Clinical Overview is ambiguous — references unsubmitted studies."
+      },
+      {
+        "requirement_id": "CTD-2.6",
+        "severity": "medium",
+        "_note": "Nonclinical Summaries are ambiguous — tabulated data incomplete."
+      },
+      {
+        "requirement_id": "CTD-3.2.S.2",
+        "severity": "medium",
+        "_note": "Drug Substance Manufacture is ambiguous — process validation data missing."
+      }
+    ],
+    "expected_gap_count_min": 6,
+    "expected_gap_count_max": 8
+  }
+}
