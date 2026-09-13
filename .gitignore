@@ -95,3 +95,4 @@ logs/
 *.tfstate
 *.tfstate.backup
 src/backend/safetyready.db
+src/backend/uploads/

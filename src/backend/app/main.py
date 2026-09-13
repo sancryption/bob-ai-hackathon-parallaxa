@@ -7,6 +7,9 @@ from fastapi.responses import JSONResponse
 
 from app.db.session import create_db_and_tables
 from app.routers import health, projects
+from app.routers import jobs as jobs_router
+from app.routers import signals as signals_router
+from app.routers import readiness as readiness_router
 from app.schemas import ErrorDetail, ErrorEnvelope
 
 
@@ -18,9 +21,15 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title="SafetyReady API",
-        version="0.1.0",
-        description="SafetyReady — submission readiness and signal detection.",
+        version="0.2.0",
+        description=(
+            "SafetyReady — deterministic pharmacovigilance signal detection "
+            "and submission readiness assessment."
+        ),
         lifespan=lifespan,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json",
     )
 
     # CORS — allow the local Vite dev server
@@ -49,6 +58,9 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix="/api")
     app.include_router(projects.router, prefix="/api")
+    app.include_router(jobs_router.router, prefix="/api")
+    app.include_router(signals_router.router, prefix="/api")
+    app.include_router(readiness_router.router, prefix="/api")
 
     return app
 
