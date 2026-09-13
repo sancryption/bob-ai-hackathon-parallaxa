@@ -191,6 +191,7 @@ def _assessment_to_read(
         requirement_mappings=mappings,
         review_status=ReviewStatus(ra.review_status.value),
         algorithm_version=ra.algorithm_version,
+        catalog_version=ra.catalog_version,
         created_at=ra.created_at,
     )
 
@@ -401,12 +402,19 @@ def get_requirement_matrix(
             "requirement_id": m.requirement_id,
             "dossier_section_id": m.dossier_section_id,
             "status": m.status.value,
+            "mapping_method": m.mapping_method,
+            "confidence": m.confidence,
             "notes": m.notes,
         }
         for m in mapping_rows
     ]
     return OkEnvelope(
-        data={"assessment_id": ra.id, "mappings": mappings, "total": len(mappings)}
+        data={
+            "assessment_id": ra.id,
+            "catalog_version": ra.catalog_version,
+            "mappings": mappings,
+            "total": len(mappings),
+        }
     )
 
 

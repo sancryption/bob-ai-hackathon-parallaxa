@@ -160,6 +160,8 @@ class RequirementMapping(SQLModel, table=True):
         default=None, foreign_key="dossier_sections.id"
     )
     status: SectionStatus
+    mapping_method: Optional[str] = Field(default=None, max_length=64)
+    confidence: Optional[float] = Field(default=None)
     notes: Optional[str] = Field(default=None, max_length=2048)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)

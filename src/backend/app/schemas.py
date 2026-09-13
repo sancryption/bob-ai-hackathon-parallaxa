@@ -188,6 +188,7 @@ class ThresholdStatus(str, Enum):
 class SignalSummary(BaseModel):
     """Lightweight signal summary for list views — no per-cell counts."""
 
+    id: Optional[int] = Field(default=None, description="DB integer id of the Signal row")
     drug: str
     event: str
     prr: float = Field(ge=0.0, description="Proportional Reporting Ratio")
@@ -368,6 +369,7 @@ class ReadinessAssessmentRead(BaseModel):
     requirement_mappings: List[RequirementMapping] = []
     review_status: ReviewStatus = ReviewStatus.not_started
     algorithm_version: str = "0.1.0"
+    catalog_version: str = "0.1.0"
     created_at: datetime
 
     model_config = {"from_attributes": True}

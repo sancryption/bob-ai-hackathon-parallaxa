@@ -232,6 +232,8 @@ class ReadinessEngine:
                 assessment_id=ra.id,
                 requirement_id=m.requirement_id,
                 status=orm_status,
+                mapping_method=m.mapping_method.value if m.mapping_method else None,
+                confidence=m.confidence,
                 notes=m.notes,
             )
             session.add(rm)

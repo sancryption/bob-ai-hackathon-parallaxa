@@ -128,6 +128,8 @@ export type ThresholdStatus = "below" | "at" | "above";
 
 /** Lightweight summary for list / dashboard views. */
 export interface SignalSummary {
+  /** DB integer id — present when returned from list endpoint (added to backend SignalSummary) */
+  id?: number;
   drug: string;
   event: string;
   /** Proportional Reporting Ratio */
@@ -264,6 +266,17 @@ export interface GapList {
   total: number;
 }
 
+export interface RequirementMappingDetail {
+  requirement_id: string;
+  dossier_section_id?: string;
+  status: SectionStatus;
+  /** "exact_code" | "normalised_code" | "keyword_title" | "fuzzy_title" | "unmatched" */
+  mapping_method?: string;
+  /** 0.0–1.0 */
+  confidence?: number;
+  notes?: string;
+}
+
 export interface ReadinessAssessmentRead {
   id: number;
   project_id: number;
@@ -276,7 +289,15 @@ export interface ReadinessAssessmentRead {
   requirement_mappings: RequirementMapping[];
   review_status: ReviewStatus;
   algorithm_version: string;
+  catalog_version: string;
   created_at: string;
+}
+
+export interface RequirementsMatrixResponse {
+  assessment_id: number;
+  catalog_version: string;
+  mappings: RequirementMappingDetail[];
+  total: number;
 }
 
 // ---------------------------------------------------------------------------

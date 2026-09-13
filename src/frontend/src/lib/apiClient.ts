@@ -12,9 +12,13 @@ import type {
   ProjectList,
   ProjectRead,
   ReadinessAssessmentRead,
+  RequirementsMatrixResponse,
   ReviewStatus,
+  SignalRead,
   SignalSummaryList,
 } from "../types/api";
+
+export type { RequirementsMatrixResponse };
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -78,6 +82,42 @@ async function download(path: string): Promise<Response> {
 }
 
 // ---------------------------------------------------------------------------
+// Signal summary type (extended with processing metrics)
+// ---------------------------------------------------------------------------
+
+export interface SignalSummaryData {
+  job_id: number;
+  total_signals: number;
+  signals_above_threshold: number;
+  rows_used?: number;
+  total_raw_rows?: number;
+  duplicate_rows?: number;
+  excluded_rows?: number;
+  distinct_drugs?: number;
+  distinct_events?: number;
+  algorithm_version: string;
+  completed_at: string;
+}
+
+export interface ClustersData {
+  job_id: number;
+  clusters: Array<{
+    preferred_term: string;
+    raw_aliases: string[];
+    meddra_code?: string;
+    case_count: number;
+    provenances: Array<{
+      raw_term: string;
+      preferred_term: string;
+      meddra_code?: string;
+      method: string;
+      confidence: number;
+    }>;
+  }>;
+  total: number;
+}
+
+// ---------------------------------------------------------------------------
 // Typed endpoints
 // ---------------------------------------------------------------------------
 
@@ -113,15 +153,7 @@ export const api = {
     return multipart<JobRead>(`/api/projects/${projectId}/signals/upload`, form);
   },
   getSignalSummary: (projectId: number) =>
-    request<{
-      job_id: number;
-      total_signals: number;
-      signals_above_threshold: number;
-      rows_used?: number;
-      distinct_drugs?: number;
-      algorithm_version: string;
-      completed_at: string;
-    }>(`/api/projects/${projectId}/signals/summary`),
+    request<SignalSummaryData>(`/api/projects/${projectId}/signals/summary`),
   listSignals: (projectId: number, params?: { severity?: string; limit?: number; offset?: number }) => {
     const q = new URLSearchParams();
     if (params?.severity) q.set("severity", params.severity);
@@ -129,10 +161,10 @@ export const api = {
     if (params?.offset !== undefined) q.set("offset", String(params.offset));
     return request<SignalSummaryList>(`/api/projects/${projectId}/signals?${q}`);
   },
+  getSignal: (projectId: number, signalId: number) =>
+    request<SignalRead>(`/api/projects/${projectId}/signals/${signalId}`),
   getClusters: (projectId: number) =>
-    request<{ job_id: number; clusters: unknown[]; total: number }>(
-      `/api/projects/${projectId}/signals/clusters`,
-    ),
+    request<ClustersData>(`/api/projects/${projectId}/signals/clusters`),
   exportSignals: (projectId: number, fmt: "json" | "csv") =>
     download(`/api/projects/${projectId}/signals/export?fmt=${fmt}`),
 
@@ -148,6 +180,8 @@ export const api = {
     request<{ assessment_id: number; overall_score: number; module_scores: unknown[] }>(
       `/api/projects/${projectId}/readiness/modules`,
     ),
+  getRequirementsMatrix: (projectId: number) =>
+    request<RequirementsMatrixResponse>(`/api/projects/${projectId}/readiness/requirements`),
   listGaps: (projectId: number, params?: { severity?: string; review_status?: string; limit?: number }) => {
     const q = new URLSearchParams();
     if (params?.severity) q.set("severity", params.severity);

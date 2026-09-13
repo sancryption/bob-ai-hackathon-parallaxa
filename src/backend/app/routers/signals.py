@@ -299,13 +299,22 @@ def get_signal_summary(project_id: int, session: SessionDep):
     above = sum(1 for s in signals if s.result_json and
                 json.loads(s.result_json).get("threshold_status") in ("above", "at"))
 
+    rows_used = result_meta.get("rows_used")
+    total_raw_rows = result_meta.get("total_raw_rows")
+    duplicate_rows = result_meta.get("exact_duplicate_rows_removed")
+    excluded_rows = result_meta.get("rows_dropped_missing_required")
+
     return OkEnvelope(
         data={
             "job_id": job.id,
             "total_signals": len(signals),
             "signals_above_threshold": above,
-            "rows_used": result_meta.get("rows_used"),
+            "rows_used": rows_used,
+            "total_raw_rows": total_raw_rows,
+            "duplicate_rows": duplicate_rows,
+            "excluded_rows": excluded_rows,
             "distinct_drugs": result_meta.get("distinct_drugs"),
+            "distinct_events": result_meta.get("distinct_events_canonical"),
             "algorithm_version": job.algorithm_version,
             "completed_at": job.updated_at.isoformat(),
         }
@@ -371,6 +380,7 @@ def list_signals(
         rd = json.loads(sig.result_json) if sig.result_json else {}
         items.append(
             SignalSummary(
+                id=sig.id,
                 drug=rd.get("drug", sig.title.split(" — ")[0] if " — " in sig.title else sig.title),
                 event=rd.get("event", sig.title.split(" — ")[1] if " — " in sig.title else ""),
                 prr=float(rd.get("prr") or 0.0),
