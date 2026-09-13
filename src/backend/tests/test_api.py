@@ -297,15 +297,22 @@ class TestCompletedSignalResult:
         list_resp = client.get(f"/api/projects/{pid}/signals")
         items = list_resp.json()["data"]["items"]
         assert len(items) >= 1
-        signal_id = items[0]["rank"]  # rank is not the DB id; get real id
-        # Use the list endpoint which returns full objects
-        resp2 = client.get(f"/api/projects/{pid}/signals")
-        first = resp2.json()["data"]["items"][0]
-        # The summary list returns SignalSummary, not SignalRead with id
-        # Verify fields present in summary
-        assert "drug" in first
-        assert "prr" in first
-        assert "severity" in first
+        first = items[0]
+        # SignalSummary has an 'id' field (the DB integer id)
+        assert "id" in first, "SignalSummary must include integer DB id"
+        sig_id = first["id"]
+        assert isinstance(sig_id, int), f"Expected int id, got {type(sig_id)}"
+        # Fetch the detail endpoint using the DB id
+        detail_resp = client.get(f"/api/projects/{pid}/signals/{sig_id}")
+        assert detail_resp.status_code == 200, detail_resp.text
+        detail = detail_resp.json()["data"]
+        # SignalRead has id/severity at the top level; drug/event are inside result
+        assert detail["id"] == sig_id
+        assert detail["severity"] == first["severity"]
+        # result contains drug and event fields
+        assert detail.get("result") is not None
+        assert detail["result"]["drug"] == first["drug"]
+        assert detail["result"]["event"] == first["event"]
 
     def test_signal_detail_by_id(self, client: TestClient):
         pid = _create_project(client)
@@ -821,3 +828,112 @@ class TestEndToEndFlows:
         md_export = client.get(f"/api/projects/{pid}/readiness/export?fmt=markdown")
         assert md_export.status_code == 200
         assert "Overall readiness score" in md_export.text
+
+
+# ===========================================================================
+# 25. Signal detail fields — a/b/c/d and full result
+# ===========================================================================
+
+
+class TestSignalDetailFields:
+    def test_signal_detail_contains_contingency_table(self, client: TestClient):
+        """Signal detail must return a/b/c/d contingency table cells."""
+        pid = _create_project(client)
+        job = _run_signal_job_sync(client, pid)
+        assert job["status"] == "complete"
+        export_resp = client.get(f"/api/projects/{pid}/signals/export?fmt=json")
+        signals = json.loads(export_resp.content)["signals"]
+        assert len(signals) >= 1
+        sig_id = signals[0]["id"]
+        detail = client.get(f"/api/projects/{pid}/signals/{sig_id}").json()["data"]
+        result = detail.get("result")
+        assert result is not None, "Signal detail must have a 'result' field"
+        for cell in ("a", "b", "c", "d"):
+            assert cell in result, f"Missing contingency table cell '{cell}'"
+            assert isinstance(result[cell], int) and result[cell] >= 0
+
+    def test_signal_detail_prr_and_rank_positive(self, client: TestClient):
+        """PRR must be > 0 and rank must be >= 1 for persisted signals."""
+        pid = _create_project(client)
+        job = _run_signal_job_sync(client, pid)
+        assert job["status"] == "complete"
+        export_resp = client.get(f"/api/projects/{pid}/signals/export?fmt=json")
+        signals = json.loads(export_resp.content)["signals"]
+        assert len(signals) >= 1
+        sig_id = signals[0]["id"]
+        detail = client.get(f"/api/projects/{pid}/signals/{sig_id}").json()["data"]
+        result = detail["result"]
+        assert result["prr"] > 0.0, "PRR must be positive for an above-threshold signal"
+        assert result["rank"] >= 1
+
+    def test_csv_export_contains_prr_values(self, client: TestClient):
+        """CSV export must contain numeric PRR values in data rows (not just headers)."""
+        pid = _create_project(client)
+        job = _run_signal_job_sync(client, pid)
+        assert job["status"] == "complete"
+        resp = client.get(f"/api/projects/{pid}/signals/export?fmt=csv")
+        assert resp.status_code == 200
+        lines = resp.text.strip().split("\n")
+        assert len(lines) >= 2, "CSV must have header + at least one data row"
+        header = lines[0].split(",")
+        prr_idx = next((i for i, h in enumerate(header) if "prr" in h.lower()), None)
+        assert prr_idx is not None, "CSV header must contain a 'prr' column"
+        # First data row must have a non-empty prr value
+        data_row = lines[1].split(",")
+        assert prr_idx < len(data_row), "PRR column missing from data row"
+        try:
+            prr_val = float(data_row[prr_idx])
+            assert prr_val > 0.0, "PRR in CSV data row must be > 0"
+        except ValueError:
+            assert False, f"PRR value '{data_row[prr_idx]}' is not a valid float"
+
+
+# ===========================================================================
+# 26. Requirement matrix mapping_method and confidence persisted
+# ===========================================================================
+
+
+class TestRequirementMappingFieldsPersisted:
+    def test_requirement_matrix_has_mapping_method_and_confidence(self, client: TestClient):
+        """After a readiness job, the requirement matrix must include
+        mapping_method and confidence values from the engine."""
+        pid = _create_project(client)
+        job = _run_readiness_job_sync(client, pid)
+        assert job["status"] == "complete", f"Job failed: {job.get('error')}"
+        resp = client.get(f"/api/projects/{pid}/readiness/requirements")
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        mappings = data["mappings"]
+        assert len(mappings) >= 1
+
+        # At least the exact-code matches should have mapping_method populated
+        methods_present = [m["mapping_method"] for m in mappings if m["mapping_method"] is not None]
+        assert len(methods_present) >= 1, (
+            "At least one mapping must have mapping_method populated after persist"
+        )
+        # Exact-code matches (e.g. CTD-3.2.S.1) should have confidence = 1.0
+        exact_mappings = [m for m in mappings if m.get("mapping_method") == "exact_code"]
+        if exact_mappings:
+            for m in exact_mappings:
+                conf = m.get("confidence")
+                assert conf is not None, "exact_code mapping must have confidence"
+                assert 0.0 <= conf <= 1.0, f"confidence {conf} out of range"
+
+    def test_requirement_matrix_exact_code_matches_have_high_confidence(self, client: TestClient):
+        """Exact-code mappings (CTD catalog section matches dossier section) must
+        have confidence >= 0.9."""
+        pid = _create_project(client)
+        job = _run_readiness_job_sync(client, pid)
+        assert job["status"] == "complete"
+        resp = client.get(f"/api/projects/{pid}/readiness/requirements")
+        data = resp.json()["data"]
+        exact_mappings = [
+            m for m in data["mappings"]
+            if m.get("mapping_method") == "exact_code"
+        ]
+        # The fixture dossier has sections matching several catalog IDs by exact code
+        assert len(exact_mappings) >= 1, "Expected at least one exact_code match from fixture"
+        for m in exact_mappings:
+            assert m["confidence"] >= 0.6, (
+                f"exact_code mapping for {m['requirement_id']} has confidence {m['confidence']}"
+            )
