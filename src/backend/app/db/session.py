@@ -2,6 +2,7 @@
 from sqlmodel import SQLModel, Session, create_engine
 
 from app.config import settings
+import app.models  # noqa: F401 — registers all ORM models with SQLModel.metadata
 
 # connect_args required for SQLite to work across threads in FastAPI
 engine = create_engine(
