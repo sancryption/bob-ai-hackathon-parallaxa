@@ -12,9 +12,32 @@ engine = create_engine(
 )
 
 
+def _apply_migrations(conn) -> None:
+    """Idempotent column migrations for databases created before the current schema.
+
+    SQLite's CREATE TABLE IF NOT EXISTS does not add columns to existing tables,
+    so any DB created from an older schema version will be missing columns added
+    later.  ALTER TABLE … ADD COLUMN is safe to retry — we catch the OperationalError
+    that SQLite raises when the column already exists.
+    """
+    migrations = [
+        "ALTER TABLE requirement_mappings ADD COLUMN mapping_method VARCHAR(64)",
+        "ALTER TABLE requirement_mappings ADD COLUMN confidence REAL",
+    ]
+    cur = conn.cursor()
+    for sql in migrations:
+        try:
+            cur.execute(sql)
+        except Exception:
+            pass  # column already exists — safe to ignore
+    conn.commit()
+
+
 def create_db_and_tables() -> None:
-    """Create all tables. Called once at startup."""
+    """Create all tables then apply any pending schema migrations."""
     SQLModel.metadata.create_all(engine)
+    with engine.connect() as conn:
+        _apply_migrations(conn.connection.dbapi_connection)
 
 
 def get_session():

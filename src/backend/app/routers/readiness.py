@@ -504,10 +504,6 @@ def get_gap(project_id: int, gap_id: int, session: SessionDep):
 # ---------------------------------------------------------------------------
 
 
-class GapReviewUpdate:
-    pass
-
-
 from pydantic import BaseModel as _BM
 
 

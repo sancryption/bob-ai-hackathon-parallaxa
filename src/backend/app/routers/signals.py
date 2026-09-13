@@ -26,7 +26,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import Response
 from sqlmodel import Session, select
 
 from app.db.session import get_session

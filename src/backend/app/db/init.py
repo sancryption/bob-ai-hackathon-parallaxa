@@ -15,7 +15,6 @@ references may differ across regions (FDA, EMA, PMDA, etc.) and drug types
 (NME, biosimilar, generic, etc.).  Always consult the current applicable
 guidance documents before use in a real regulatory submission.
 """
-from datetime import datetime, timezone
 from typing import Optional
 
 from sqlmodel import Session, SQLModel, select
