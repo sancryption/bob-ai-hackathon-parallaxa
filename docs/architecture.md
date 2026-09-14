@@ -150,3 +150,16 @@ No watsonx.ai, OpenAI, or other LLM calls are made. The application runs fully o
 5. **No authentication or authorisation.** All API endpoints are public.
 6. **CTD catalog is illustrative.** The 20-entry prototype catalog covers representative requirements from all 5 ICH CTD modules; it is not a complete jurisdiction-specific regulatory checklist.
 7. **Text/PDF dossier parsing is a stub.** `parse_text_outline()` returns an empty list. Only JSON and CSV dossier outlines are processed.
+
+---
+
+## Development Tooling
+
+**IBM Bob** was used as the AI-assisted development environment throughout the entire project. Bob was responsible for:
+
+- Scaffolding and implementing both analysis engines (`signal/` and `readiness/` service trees) while keeping all internal modules in sync
+- Authoring the 304-test backend test suite and 51-test frontend test suite against known fixture data
+- Maintaining strict type consistency between `app/schemas.py` (Python) and `src/types/api.ts` (TypeScript) — documented in `docs/contracts.md`
+- Generating and iterating on this documentation based on what is actually implemented in the code
+
+No LLM or AI is used at application runtime. Bob's role was entirely build-time.

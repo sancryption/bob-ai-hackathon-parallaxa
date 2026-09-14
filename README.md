@@ -1,6 +1,6 @@
-# 🚀 [Your Project Title Here]
+# SafetyReady
 
-> ⚠️ **Replace everything in `[ ]` brackets with your actual content before submission.**
+> Pharmacovigilance signal detection and ICH CTD submission readiness assessment — fully offline, no API keys required.
 
 ---
 
@@ -8,36 +8,32 @@
 
 | Field | Value |
 |---|---|
-| **Team Name** | [Your Team Name] |
-| **Track** | [AI / DevOps / Sustainability / Open] |
-| **Team Lead** | [Name] — [email@ibm.com] |
-| **Members** | [Name 1], [Name 2], [Name 3] |
+| **Team Name** | Parallaxa |
+| **Track** | AI |
+| **Team Lead** | Saniya Khatun Shaikh — 25bsit117@charusat.edu.in |
+| **Members** | _(add team member names here)_ |
 
 ---
 
 ## 🎯 Problem Statement
 
-> In 2–3 sentences: What problem does your project solve? Who experiences this problem?
-
-[Describe the real-world problem your project addresses. Be specific about who the user is and what pain point they face.]
+Pharmaceutical teams preparing new-drug regulatory submissions face two time-consuming, error-prone tasks: manually scanning large adverse-event datasets for drug-safety signals, and auditing whether a dossier covers every required ICH CTD section before submission. Both tasks are typically done with spreadsheets and tribal knowledge, leading to missed signals and costly late-stage regulatory rejections.
 
 ---
 
 ## 💡 Solution
 
-> In 2–3 sentences: What did you build? How does it solve the problem above?
-
-[Describe your solution clearly. Explain the core mechanism — what makes it work.]
+SafetyReady is a full-stack pharmacovigilance and submission-readiness platform that automates both tasks. It ingests FAERS-style adverse-event reports and runs a deterministic PRR (Proportional Reporting Ratio) pipeline to surface ranked drug-safety signals with 95% confidence intervals. A second workflow accepts a structured dossier outline and maps it against a versioned ICH CTD requirements catalog, scoring each module and generating a prioritised gap list with specific recommendations. Both workflows run entirely offline with no external API dependencies.
 
 ---
 
 ## ✨ Key Features
 
-- **Feature 1:** [Brief description — e.g., "Real-time anomaly detection using watsonx.ai"]
-- **Feature 2:** [Brief description]
-- **Feature 3:** [Brief description]
-- **Feature 4:** [Optional]
-- **Feature 5:** [Optional]
+- **PRR Signal Detection Engine:** Full 2×2 contingency tables, Evans 95% confidence intervals, configurable thresholds (PRR ≥ 2.0, a ≥ 3), severity ranking (low / medium / high / critical), and JSON/CSV export.
+- **MedDRA-Aligned Event Normalisation:** Alias dictionary + rapidfuzz fuzzy clustering maps raw adverse-event strings to preferred MedDRA terms, with per-term provenance tracking and event cluster views.
+- **ICH CTD Submission Readiness Assessment:** 4-tier requirement matching (exact code → normalised code → keyword/title → fuzzy title), per-module weighted scoring across all five ICH CTD modules, and a gap list with severity and actionable recommendations.
+- **Background Job Runner with Live Polling:** Upload → queued → running → complete/failed lifecycle managed via FastAPI BackgroundTasks; the frontend polls without a page reload.
+- **Comprehensive Test Suite:** 304 backend tests (pytest) and 51 frontend tests (Vitest), covering both engine pipelines against known fixture data with range-based assertions.
 
 ---
 
@@ -45,50 +41,86 @@
 
 | Category | Technologies |
 |---|---|
-| **Languages** | [e.g., Python, TypeScript] |
-| **Frameworks** | [e.g., FastAPI, React] |
-| **IBM Technologies** | [e.g., watsonx.ai, IBM Bob, IBM Cloud] |
-| **Databases** | [e.g., PostgreSQL, Redis] |
-| **Other** | [e.g., Docker, GitHub Actions] |
+| **Languages** | Python 3.11+, TypeScript |
+| **Frameworks** | FastAPI 0.115, React 19, Vite 8, SQLModel, Pydantic 2, Vitest |
+| **IBM Technologies** | IBM Bob (used as development environment throughout the project) |
+| **Databases** | SQLite via SQLAlchemy 2 / SQLModel |
+| **Other** | rapidfuzz, uvicorn, python-multipart, GitHub Actions |
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-├── src/                  # All source code
-├── docs/                 # Written documentation
-│   ├── problem-statement.md
-│   ├── solution-overview.md
-│   ├── architecture.md
-│   └── setup-guide.md
-├── demo/                 # Demo artifacts
-│   ├── screenshots/      # App screenshots
-│   └── demo-video-link.txt  # Link to demo video
-├── presentation/         # Slide deck
-└── submission.yaml       # Structured submission metadata
+bob-ai-hackathon-parallaxa/
+├── src/
+│   ├── backend/
+│   │   ├── app/
+│   │   │   ├── db/           # Engine, session, dependency
+│   │   │   ├── models/       # SQLModel ORM models
+│   │   │   ├── routers/      # FastAPI route handlers (health, projects, jobs, signals, readiness)
+│   │   │   ├── services/
+│   │   │   │   ├── signal/   # engine, ingestion, normalisation, prr, types
+│   │   │   │   └── readiness/# engine, catalog, mapper, scorer, gaps, parser, types
+│   │   │   ├── config.py
+│   │   │   ├── main.py
+│   │   │   └── schemas.py
+│   │   ├── tests/            # 304 tests + fixtures (faers_demo.csv, dossier_outline.json)
+│   │   └── requirements.txt
+│   └── frontend/
+│       └── src/
+│           ├── components/   # UploadZone, JobPoller, shared UI
+│           ├── lib/          # apiClient.ts
+│           ├── pages/        # ProjectsPage, ProjectDetailPage, SignalDetectionPage, ReadinessPage
+│           └── types/        # api.ts — TypeScript mirror of backend schemas
+├── docs/                     # Architecture, setup, contracts, problem statement, solution overview
+├── demo/                     # Demo video link, screenshots
+└── submission.yaml
 ```
 
 ---
 
 ## ⚡ How to Run
 
-> **Copy these exact steps from your [`docs/setup-guide.md`](docs/setup-guide.md)**
+See [`docs/setup-guide.md`](docs/setup-guide.md) for the full tested guide. Quick start:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/[your-repo].git
-cd [your-repo]
+git clone https://github.com/[your-repo]/bob-ai-hackathon-parallaxa.git
+cd bob-ai-hackathon-parallaxa
 
-# 2. Install dependencies
-[your install command here]
+# 2. Backend
+cd src/backend
+python -m venv .venv
+# Windows: .venv\Scripts\activate   macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your values
+# 3. Frontend (new terminal)
+cd src/frontend
+npm install
+npm run dev
+```
 
-# 4. Run the project
-[your run command here]
+- **Frontend:** http://localhost:5173
+- **API docs (Swagger):** http://localhost:8000/api/docs
+- **Health check:** http://localhost:8000/api/health
+
+No API keys or cloud accounts required.
+
+---
+
+## 🧪 Tests
+
+```bash
+# Backend (304 tests)
+cd src/backend && pytest tests/ -v
+
+# Frontend (51 tests)
+cd src/frontend && npm test
+
+# Manual end-to-end flow
+cd src/backend && python tests/_manual_flow.py
 ```
 
 ---
@@ -100,22 +132,22 @@ cp .env.example .env
 | 📹 Demo Video | [See demo/demo-video-link.txt](demo/demo-video-link.txt) |
 | 🌐 Live Demo | [See demo/live-demo-url.txt](demo/live-demo-url.txt) |
 | 🖼️ Screenshots | [See demo/screenshots/](demo/screenshots/) |
-| 📊 Presentation | [See presentation/slides.pdf](presentation/) |
+| 📊 Presentation | [See presentation/](presentation/) |
 
 ---
 
 ## ⚠️ Known Limitations
 
-> Be honest — judges appreciate transparency over overclaiming.
-
-- [Limitation 1: e.g., "Authentication is mocked — not production-ready"]
-- [Limitation 2: e.g., "Only tested on Chrome"]
-- [Limitation 3: e.g., "Feature X is scaffolded but not fully implemented"]
+- **CTD catalog is illustrative:** The 20-entry prototype covers representative requirements from all 5 ICH CTD modules; it is not a complete jurisdiction-specific regulatory checklist.
+- **Text/PDF dossier parsing is a stub:** Only JSON and CSV dossier outlines are processed; `parse_text_outline()` returns an empty list.
+- **No authentication:** All API endpoints are public — suitable for local/demo use only.
+- **SQLite only:** Not suitable for concurrent multi-user production deployments.
+- **In-process job runner:** FastAPI `BackgroundTasks` runs in the same process as the web server — production would require Celery + Redis.
+- **Drug alias dictionary:** Seeded with representative entries; real-world use requires extension.
+- **No Alembic migrations:** Schema evolution requires manual `ALTER TABLE` or deleting `safetyready.db`.
 
 ---
 
 ## 🏅 What We're Most Proud Of
 
-[Tell the judges what part of your submission is strongest and worth paying close attention to.]
-
----
+The two fully implemented analysis engines. The PRR signal detection engine is a complete, standards-based pharmacovigilance algorithm — not scaffolding — with case-version deduplication, MedDRA alias clustering, Evans confidence intervals, configurable thresholds, and severity ranking, validated by 304 tests against fixture data with known expected ranges. The CTD readiness engine implements a principled 4-tier matching strategy against a versioned catalog covering all five ICH modules, produces per-module weighted scores using a documented formula, and generates actionable gap recommendations with severity levels — all deterministic, reproducible, and fully offline.
