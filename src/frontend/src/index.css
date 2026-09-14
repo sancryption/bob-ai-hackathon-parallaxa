@@ -1,111 +1,132 @@
+/* SafetyReady — design token layer */
+
+/* ---------- Load Inter if available (falls through to system stack) -------- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* --- Brand palette ---------------------------------------------------- */
+  --sr-blue:          #0d6efd;
+  --sr-blue-dark:     #0a58ca;
+  --sr-blue-deep:     #052c65;
+  --sr-teal:          #0dcaf0;
+  --sr-teal-dark:     #0aa2c0;
+  --sr-success:       #198754;
+  --sr-warning:       #ffc107;
+  --sr-danger:        #dc3545;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* --- Semantic tokens -------------------------------------------------- */
+  --text:             #495057;
+  --text-h:           #212529;
+  --text-muted:       #6c757d;
+  --bg:               #ffffff;
+  --bg-page:          #f6f9fc;
+  --border:           #dee2e6;
+  --code-bg:          #f1f3f5;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  --accent:           var(--sr-blue);
+  --accent-dark:      var(--sr-blue-dark);
+  --accent-bg:        rgba(13, 110, 253, 0.07);
+  --accent-border:    rgba(13, 110, 253, 0.25);
+
+  --shadow-sm:        0 1px 3px rgba(16, 54, 92, 0.06), 0 1px 2px rgba(16, 54, 92, 0.04);
+  --shadow:           0 4px 12px rgba(16, 54, 92, 0.08), 0 1px 4px rgba(16, 54, 92, 0.04);
+  --shadow-lg:        0 8px 24px rgba(16, 54, 92, 0.10), 0 2px 8px rgba(16, 54, 92, 0.06);
+
+  /* --- Typography ------------------------------------------------------- */
+  --sans:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono:    ui-monospace, Consolas, "Cascadia Code", monospace;
+
+  /* --- Spacing tokens --------------------------------------------------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* --- Radius tokens ---------------------------------------------------- */
+  --radius-sm:  6px;
+  --radius:     10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* --- Transitions ------------------------------------------------------- */
+  --transition: 0.15s ease;
+
+  /* --- Max content width ------------------------------------------------ */
+  --max-w: 1280px;
+
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
+/* ---------- Dark-mode overrides --------------------------------------- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --text:           #adb5bd;
+    --text-h:         #f8f9fa;
+    --text-muted:     #868e96;
+    --bg:             #1a1d23;
+    --bg-page:        #14161c;
+    --border:         #2e3340;
+    --code-bg:        #20232b;
+    --accent:         #4d9dff;
+    --accent-dark:    #3b87f5;
+    --accent-bg:      rgba(77, 157, 255, 0.12);
+    --accent-border:  rgba(77, 157, 255, 0.28);
+    --shadow-sm:      0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.18);
+    --shadow:         0 4px 12px rgba(0,0,0,0.30), 0 1px 4px rgba(0,0,0,0.18);
+    --shadow-lg:      0 8px 24px rgba(0,0,0,0.38), 0 2px 8px rgba(0,0,0,0.22);
   }
 }
 
+/* ---------- Reduced motion -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Global resets --------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-page); }
+h1, h2, h3, h4, h5, h6 { font-family: var(--heading); color: var(--text-h); margin: 0; }
+p { margin: 0; }
+button { cursor: pointer; font-family: var(--sans); }
+
+/* ---------- Root container -------------------------------------------- */
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100svh;
 }
 
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
+/* ---------- Inline code ------------------------------------------------ */
 code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 0.88em;
   background: var(--code-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--text-h);
+}
+
+/* ---------- Focus visible global -------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

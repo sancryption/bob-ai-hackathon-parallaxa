@@ -81,18 +81,23 @@ export function SignalDetectionPage({ projectId }: SignalDetectionPageProps) {
 
   return (
     <div>
-      <div className="sr-page-header">
-        <h1 className="sr-page-title">Signal Detection</h1>
-        <p className="sr-page-subtitle">
-          Upload a FAERS-compatible CSV or JSON file to run the PRR-based
-          disproportionality analysis.
-        </p>
+      {/* Page band hero */}
+      <div className="sr-page-band">
+        <div className="sr-page-band-inner">
+          <p className="sr-page-band-eyebrow">SAFETY INTELLIGENCE</p>
+          <h1 className="sr-page-band-title">Signal Detection</h1>
+          <p className="sr-page-band-sub">
+            Upload a FAERS-compatible CSV or JSON file to run PRR-based
+            disproportionality analysis. Review ranked signals, event clusters,
+            and normalisation provenance.
+          </p>
+        </div>
       </div>
 
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
       {tab === "Upload" && (
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 580 }}>
           <UploadZone
             accept=".csv,.json"
             hint="CSV or JSON file — FAERS-compatible format (case_id, drug, event columns required)"
@@ -120,13 +125,13 @@ export function SignalDetectionPage({ projectId }: SignalDetectionPageProps) {
       )}
 
       {tab === "Progress" && (
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 580 }}>
           {activeJobId ? (
             <JobPoller jobId={activeJobId} onComplete={handleJobComplete}>
               {() => null}
             </JobPoller>
           ) : (
-            <Empty icon="📋" message="No job running. Upload a file to start." />
+            <Empty message="No job running. Upload a file to start." />
           )}
         </div>
       )}
@@ -237,7 +242,7 @@ function SignalResults({ projectId }: { projectId: number }) {
 
   if (loading) return <Loading />;
   if (error) return <ErrorPanel message={error} onRetry={load} />;
-  if (!summary) return <Empty icon="📊" message="No results yet." />;
+  if (!summary) return <Empty message="No results yet." />;
 
   // Sort signals
   const sorted = [...signals].sort((a, b) => {
@@ -249,7 +254,7 @@ function SignalResults({ projectId }: { projectId: number }) {
   return (
     <div>
       {/* Dataset processing metrics */}
-      <div className="sr-section-heading">Dataset Processing</div>
+      <p className="sr-section-heading">Dataset Processing</p>
       <div className="sr-metric-grid sr-mb-md">
         <MetricCard
           label="Total reports"
@@ -284,13 +289,13 @@ function SignalResults({ projectId }: { projectId: number }) {
       </div>
 
       {/* Signal detection summary */}
-      <div className="sr-section-heading">Detection Results</div>
+      <p className="sr-section-heading">Detection Results</p>
       <div className="sr-metric-grid sr-mb-md">
         <MetricCard label="Total signals" value={summary.total_signals} />
         <MetricCard
           label="Above threshold"
           value={summary.signals_above_threshold}
-          sub={`PRR ≥ 2.0, cases ≥ 3`}
+          sub="PRR ≥ 2.0, cases ≥ 3"
         />
         <MetricCard
           label="Algorithm"
@@ -384,9 +389,9 @@ function SignalTable({
 }: SignalTableProps) {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.875rem" }}>
         <div className="sr-filter-bar" style={{ margin: 0 }}>
-          <span style={{ fontSize: "0.85rem", color: "var(--text)" }}>Severity:</span>
+          <span style={{ fontSize: "0.82rem", color: "var(--text-muted)", fontWeight: 500 }}>Severity:</span>
           <select
             value={severityFilter}
             onChange={(e) => onSeverityChange(e.target.value)}
@@ -398,7 +403,7 @@ function SignalTable({
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          <span style={{ fontSize: "0.85rem", color: "var(--text)" }}>Sort:</span>
+          <span style={{ fontSize: "0.82rem", color: "var(--text-muted)", fontWeight: 500 }}>Sort:</span>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as "rank" | "prr" | "total_cases")}
@@ -408,7 +413,7 @@ function SignalTable({
             <option value="prr">PRR ↓</option>
             <option value="total_cases">Cases ↓</option>
           </select>
-          <span style={{ fontSize: "0.8rem", color: "var(--text)", marginLeft: "auto" }}>
+          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginLeft: "auto" }}>
             {total} signal{total !== 1 ? "s" : ""}
           </span>
         </div>
@@ -420,13 +425,13 @@ function SignalTable({
       {exportError && <ErrorPanel message={exportError} />}
 
       {signals.length === 0 ? (
-        <Empty icon="🔍" message="No signals match the current filter." />
+        <Empty message="No signals match the current filter." />
       ) : (
         <div className="sr-table-wrap">
           <table className="sr-table" aria-label="Signal results">
             <thead>
               <tr>
-                <th>#</th>
+                <th title="Signal rank">#</th>
                 <th>Drug</th>
                 <th>Event / Cluster</th>
                 <th title="Drug+Event cases">a</th>
@@ -447,15 +452,17 @@ function SignalTable({
                   className={selectedSignal === s ? "selected" : ""}
                   aria-label={`Signal ${s.drug} ${s.event}`}
                 >
-                  <td className="sr-mono" style={{ color: "var(--text)" }}>{s.rank}</td>
-                  <td><strong>{s.drug}</strong></td>
-                  <td>{s.event}</td>
-                  {/* a/b/c/d are only in SignalResult (full detail); show — in list view */}
+                  <td className="sr-mono" style={{ color: "var(--text-muted)", fontWeight: 700 }}>{s.rank}</td>
+                  <td><strong style={{ color: "var(--accent)" }}>{s.drug}</strong></td>
+                  <td style={{ fontWeight: 500 }}>{s.event}</td>
+                  {/* a/b/c/d only in full SignalResult — show — in list view */}
                   <td className="sr-mono sr-cell-num">{s.total_cases}</td>
-                  <td className="sr-mono sr-cell-num sr-text-muted">—</td>
-                  <td className="sr-mono sr-cell-num sr-text-muted">—</td>
-                  <td className="sr-mono sr-cell-num sr-text-muted">—</td>
-                  <td className="sr-mono sr-cell-num">{s.prr.toFixed(2)}</td>
+                  <td className="sr-mono sr-cell-num" style={{ color: "var(--text-muted)" }}>—</td>
+                  <td className="sr-mono sr-cell-num" style={{ color: "var(--text-muted)" }}>—</td>
+                  <td className="sr-mono sr-cell-num" style={{ color: "var(--text-muted)" }}>—</td>
+                  <td className="sr-mono sr-cell-num" style={{ fontWeight: 700, color: "var(--text-h)" }}>
+                    {s.prr.toFixed(2)}
+                  </td>
                   <td className="sr-mono sr-cell-num">{s.total_cases}</td>
                   <td><Badge value={s.severity} /></td>
                   <td><Badge value={s.threshold_status} /></td>
@@ -497,40 +504,40 @@ function SignalDetailContent({ summary, detail, loading, error, algorithmVersion
       {loading && <Loading text="Loading detail…" />}
       {error && <ErrorPanel message={error} />}
 
-      {/* Severity + threshold */}
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+      {/* Severity + threshold chips */}
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
         <Badge value={summary.severity} />
         <Badge value={summary.threshold_status} />
-        <span style={{ fontSize: "0.8rem", color: "var(--text)", alignSelf: "center" }}>
-          Rank #{summary.rank}
+        <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginLeft: "auto" }}>
+          Rank <strong style={{ color: "var(--text-h)" }}>#{summary.rank}</strong>
         </span>
       </div>
 
       <hr className="sr-drawer-sep" />
 
-      {/* Exact PRR formula */}
+      {/* PRR formula block */}
       <div>
-        <p className="sr-drawer-section-label">PRR Formula</p>
+        <p className="sr-drawer-section-label">PRR Evidence</p>
         <div className="sr-formula-box">
           <div className="sr-formula-row">
-            <span className="sr-formula-label">a (drug+event)</span>
+            <span className="sr-formula-label">a — drug + event</span>
             <span className="sr-formula-value sr-mono">{a}</span>
           </div>
           {b !== undefined && (
             <div className="sr-formula-row">
-              <span className="sr-formula-label">b (drug+other)</span>
+              <span className="sr-formula-label">b — drug + other event</span>
               <span className="sr-formula-value sr-mono">{b}</span>
             </div>
           )}
           {c !== undefined && (
             <div className="sr-formula-row">
-              <span className="sr-formula-label">c (other+event)</span>
+              <span className="sr-formula-label">c — other drug + event</span>
               <span className="sr-formula-value sr-mono">{c}</span>
             </div>
           )}
           {d !== undefined && (
             <div className="sr-formula-row">
-              <span className="sr-formula-label">d (other+other)</span>
+              <span className="sr-formula-label">d — other drug + other event</span>
               <span className="sr-formula-value sr-mono">{d}</span>
             </div>
           )}
@@ -538,7 +545,9 @@ function SignalDetailContent({ summary, detail, loading, error, algorithmVersion
             <span className="sr-formula-label">
               PRR = [a/(a+b)] / [c/(c+d)]
             </span>
-            <span className="sr-formula-value sr-mono">{prr.toFixed(4)}</span>
+            <span className="sr-formula-value sr-mono" style={{ fontSize: "1.05rem" }}>
+              {prr.toFixed(4)}
+            </span>
           </div>
           {lci !== undefined && uci !== undefined && (
             <div className="sr-formula-row">
@@ -560,7 +569,7 @@ function SignalDetailContent({ summary, detail, loading, error, algorithmVersion
           <p className="sr-drawer-section-value" style={{ marginBottom: "0.35rem" }}>
             <strong>{detail.event_cluster.preferred_term}</strong>
             {detail.event_cluster.meddra_code && (
-              <span className="sr-mono" style={{ fontSize: "0.78rem", marginLeft: "0.4rem", color: "var(--text)" }}>
+              <span className="sr-mono" style={{ fontSize: "0.78rem", marginLeft: "0.4rem", color: "var(--text-muted)" }}>
                 MedDRA {detail.event_cluster.meddra_code}
               </span>
             )}
@@ -602,11 +611,11 @@ function SignalDetailContent({ summary, detail, loading, error, algorithmVersion
               </div>
             </div>
           )}
-          <hr className="sr-drawer-sep" />
+          <hr className="sr-drawer-sep" style={{ marginTop: "0.75rem" }} />
         </div>
       )}
 
-      {/* Algorithm + source */}
+      {/* Algorithm */}
       <div>
         <p className="sr-drawer-section-label">Algorithm version</p>
         <p className="sr-drawer-section-value sr-mono">{algVer}</p>
@@ -616,7 +625,7 @@ function SignalDetailContent({ summary, detail, loading, error, algorithmVersion
       {disclaimer && (
         <div className="sr-drawer-disclaimer">
           <p className="sr-drawer-section-label">Disclaimer</p>
-          <p style={{ fontSize: "0.8rem", color: "var(--text)", lineHeight: 1.5 }}>{disclaimer}</p>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.55 }}>{disclaimer}</p>
         </div>
       )}
     </div>
@@ -639,12 +648,12 @@ function ClustersTab({ clusters, loading, error, onRetry }: ClustersTabProps) {
 
   if (loading) return <Loading text="Loading clusters…" />;
   if (error) return <ErrorPanel message={error} onRetry={onRetry} />;
-  if (!clusters) return <Empty icon="🔍" message="Clusters will appear after analysis completes." />;
-  if (clusters.clusters.length === 0) return <Empty icon="🔍" message="No clusters found." />;
+  if (!clusters) return <Empty message="Clusters will appear after analysis completes." />;
+  if (clusters.clusters.length === 0) return <Empty message="No clusters found." />;
 
   return (
     <div>
-      <p style={{ fontSize: "0.85rem", color: "var(--text)", marginBottom: "0.75rem" }}>
+      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.875rem" }}>
         {clusters.total} event cluster{clusters.total !== 1 ? "s" : ""} — groups of raw adverse-event
         strings that resolved to the same preferred term.
       </p>
@@ -659,18 +668,18 @@ function ClustersTab({ clusters, loading, error, onRetry }: ClustersTabProps) {
                 aria-expanded={isExpanded}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-                  <strong style={{ fontSize: "0.9rem" }}>{c.preferred_term}</strong>
+                  <strong style={{ fontSize: "0.9rem", color: "var(--text-h)" }}>{c.preferred_term}</strong>
                   {c.meddra_code && (
-                    <span className="sr-mono" style={{ fontSize: "0.75rem", color: "var(--text)" }}>
+                    <span className="sr-mono" style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                       MedDRA {c.meddra_code}
                     </span>
                   )}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <span style={{ fontSize: "0.8rem", color: "var(--text)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
                     {c.case_count} case{c.case_count !== 1 ? "s" : ""} · {c.raw_aliases.length} alias{c.raw_aliases.length !== 1 ? "es" : ""}
                   </span>
-                  <span style={{ color: "var(--text)", fontSize: "0.8rem" }}>{isExpanded ? "▲" : "▼"}</span>
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{isExpanded ? "▲" : "▼"}</span>
                 </div>
               </button>
 
@@ -684,20 +693,22 @@ function ClustersTab({ clusters, loading, error, onRetry }: ClustersTabProps) {
                   </div>
                   {c.provenances.length > 0 && (
                     <>
-                      <p className="sr-drawer-section-label">Normalisation details</p>
+                      <p className="sr-drawer-section-label">Normalisation provenance</p>
                       <div className="sr-table-wrap">
                         <table className="sr-table sr-compact-table" aria-label={`Provenance for ${c.preferred_term}`}>
                           <thead>
                             <tr>
                               <th>Raw term</th>
+                              <th>Canonical</th>
                               <th>Method</th>
                               <th>Confidence</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {c.provenances.map((p, i) => (
-                              <tr key={i}>
+                            {c.provenances.map((p, idx) => (
+                              <tr key={idx}>
                                 <td className="sr-mono">{p.raw_term}</td>
+                                <td className="sr-mono">{p.preferred_term}</td>
                                 <td><Badge value={p.method} /></td>
                                 <td className="sr-mono">{(p.confidence * 100).toFixed(0)}%</td>
                               </tr>

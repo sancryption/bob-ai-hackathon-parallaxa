@@ -345,13 +345,15 @@ describe("Route rendering", () => {
   it("renders the projects page by default", async () => {
     setupEmptyProjects();
     await act(async () => { render(<App />); });
-    expect(screen.getByText("Projects")).toBeInTheDocument();
+    // Nav has a "Projects" link; multiple elements may exist (desktop + mobile nav)
+    expect(screen.getAllByText("Projects").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders SafetyReady logo", async () => {
     setupEmptyProjects();
     await act(async () => { render(<App />); });
-    expect(screen.getByText(/SafetyReady|Safety/)).toBeInTheDocument();
+    // Logo text is split across spans: "Safety" + "Ready"
+    expect(screen.getByLabelText("SafetyReady home")).toBeInTheDocument();
   });
 
   it("renders project detail when hash is #/projects/1", async () => {
@@ -361,7 +363,8 @@ describe("Route rendering", () => {
     mockApi.getReadinessSummary.mockRejectedValue(new Error("404"));
     await act(async () => { render(<App />); });
     await waitFor(() => {
-      expect(screen.getByText("Test Project")).toBeInTheDocument();
+      // "Test Project" appears in both the breadcrumb and the h1
+      expect(screen.getAllByText("Test Project").length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -391,7 +394,8 @@ describe("Route rendering", () => {
     await act(async () => { render(<App />); });
     await waitFor(() => {
       expect(screen.getAllByText("Signal Detection").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByRole("button", { name: "Readiness" })).toBeInTheDocument();
+      // "Readiness" nav button has aria-label="Readiness"
+      expect(screen.getAllByRole("button", { name: "Readiness" }).length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -402,7 +406,7 @@ describe("Route rendering", () => {
     mockApi.getReadinessSummary.mockRejectedValue(new Error("404"));
     await act(async () => { render(<App />); });
 
-    await waitFor(() => expect(screen.getByText("Test Project")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText("Test Project").length).toBeGreaterThanOrEqual(1));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /Open project Test Project/ }));
     });
@@ -591,6 +595,8 @@ describe("Job polling state", () => {
 
 describe("Error state", () => {
   it("shows error panel when listProjects fails", async () => {
+    // Navigate to the Projects page where the error panel is shown
+    window.location.hash = "#/projects";
     mockApi.listProjects.mockRejectedValue(new Error("Network error"));
     await act(async () => { render(<App />); });
     await waitFor(() => {
@@ -599,6 +605,8 @@ describe("Error state", () => {
   });
 
   it("shows retry button on project list error", async () => {
+    // Navigate to the Projects page where the retry button is shown
+    window.location.hash = "#/projects";
     mockApi.listProjects.mockRejectedValue(new Error("Network error"));
     await act(async () => { render(<App />); });
     await waitFor(() => {
@@ -753,8 +761,10 @@ describe("Typed API response handling", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Module 1")).toBeInTheDocument();
-      expect(screen.getByText("Module 4")).toBeInTheDocument();
+      // Module numbers displayed as "1", "4" etc in sr-module-num span
+      // Module descriptions include "Administrative Information" and "Nonclinical Study Reports"
+      expect(screen.getByText("Administrative Information")).toBeInTheDocument();
+      expect(screen.getByText("Nonclinical Study Reports")).toBeInTheDocument();
     });
   });
 
@@ -824,6 +834,8 @@ describe("Typed API response handling", () => {
   });
 
   it("renders create project modal and calls createProject", async () => {
+    // Navigate directly to the Projects page to access the modal
+    window.location.hash = "#/projects";
     setupEmptyProjects();
     mockApi.createProject.mockResolvedValue({ data: PROJECT_1 });
     mockApi.getProject.mockResolvedValue({ data: PROJECT_1 });
@@ -832,17 +844,18 @@ describe("Typed API response handling", () => {
 
     await act(async () => { render(<App />); });
 
-    await waitFor(() => screen.getByText(/No projects yet/));
+    await waitFor(() => screen.getByText(/Start your first|No projects yet/));
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /Create your first project/ }));
     });
 
-    expect(screen.getByRole("dialog", { name: "Create project" })).toBeInTheDocument();
+    // Modal is labeled by h2#create-project-title via aria-labelledby
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Name *"), { target: { value: "New Project" } });
-      fireEvent.submit(screen.getByRole("dialog", { name: "Create project" }).querySelector("form")!);
+      fireEvent.change(screen.getByLabelText("Project name"), { target: { value: "New Project" } });
+      fireEvent.submit(screen.getByRole("dialog").querySelector("form")!);
     });
 
     await waitFor(() => {
@@ -914,7 +927,8 @@ describe("Signal detail drawer", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/PRR Formula/)).toBeInTheDocument();
+      // Label was renamed from "PRR Formula" to "PRR Evidence"
+      expect(screen.getByText(/PRR (Formula|Evidence)/)).toBeInTheDocument();
     });
   });
 
@@ -954,7 +968,8 @@ describe("Signal detail drawer", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Event Cluster/i)).toBeInTheDocument();
+      // "Event Cluster" section label (case-sensitive, not the page band which says "event clusters")
+      expect(screen.getByText("Event Cluster")).toBeInTheDocument();
       expect(screen.getAllByText("liver problem").length).toBeGreaterThanOrEqual(1);
     });
   });

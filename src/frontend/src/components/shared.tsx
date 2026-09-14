@@ -73,12 +73,11 @@ export function ErrorPanel({ code, message, onRetry }: ErrorPanelProps) {
 // ---------------------------------------------------------------------------
 
 interface EmptyProps { icon?: string; message: string; action?: ReactNode; }
-export function Empty({ icon = "📭", message, action }: EmptyProps) {
+export function Empty({ message, action }: EmptyProps) {
   return (
     <div className="sr-empty">
-      <div className="sr-empty-icon">{icon}</div>
-      <p>{message}</p>
-      {action && <div style={{ marginTop: "0.75rem" }}>{action}</div>}
+      <p style={{ color: "var(--text-muted)", marginBottom: action ? "1rem" : 0 }}>{message}</p>
+      {action && <div>{action}</div>}
     </div>
   );
 }
@@ -131,7 +130,7 @@ interface DisclaimerProps { text: string; }
 export function DisclaimerPanel({ text }: DisclaimerProps) {
   return (
     <div className="sr-disclaimer">
-      <strong>⚠ Assumptions & Limitations: </strong>{text}
+      <strong>Assumptions &amp; Limitations: </strong>{text}
     </div>
   );
 }

@@ -89,18 +89,22 @@ export function ReadinessPage({ projectId }: ReadinessPageProps) {
 
   return (
     <div>
-      <div className="sr-page-header">
-        <h1 className="sr-page-title">Submission Readiness</h1>
-        <p className="sr-page-subtitle">
-          Upload a CTD dossier outline (JSON or CSV) to assess regulatory
-          submission readiness against the prototype ICH CTD catalog.
-        </p>
+      {/* Page band hero */}
+      <div className="sr-page-band sr-page-band-teal">
+        <div className="sr-page-band-inner">
+          <p className="sr-page-band-eyebrow">REGULATORY READINESS</p>
+          <h1 className="sr-page-band-title">Submission Readiness</h1>
+          <p className="sr-page-band-sub">
+            Upload a CTD dossier outline (JSON or CSV) to assess regulatory
+            submission readiness against the prototype ICH M4 CTD catalog.
+          </p>
+        </div>
       </div>
 
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
       {tab === "Upload" && (
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 580 }}>
           <UploadZone
             accept=".json,.csv"
             hint="JSON or CSV dossier outline (section_id, title, status columns)"
@@ -128,13 +132,13 @@ export function ReadinessPage({ projectId }: ReadinessPageProps) {
       )}
 
       {tab === "Progress" && (
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 580 }}>
           {activeJobId ? (
             <JobPoller jobId={activeJobId} onComplete={handleJobComplete}>
               {() => null}
             </JobPoller>
           ) : (
-            <Empty icon="📋" message="No job running. Upload a dossier outline to start." />
+            <Empty message="No job running. Upload a dossier outline to start." />
           )}
         </div>
       )}
@@ -268,7 +272,7 @@ function ReadinessResults({ projectId }: { projectId: number }) {
 
   if (loading) return <Loading />;
   if (error) return <ErrorPanel message={error} onRetry={load} />;
-  if (!assessment) return <Empty icon="📄" message="No assessment yet." />;
+  if (!assessment) return <Empty message="No assessment yet." />;
 
   const filteredGaps = assessment.gaps.filter((g) => {
     if (severityFilter && g.severity !== severityFilter) return false;
@@ -395,7 +399,7 @@ function ReadinessResults({ projectId }: { projectId: number }) {
 
 function ModuleCards({ modules }: { modules: ModuleScore[] }) {
   if (modules.length === 0) {
-    return <Empty icon="📊" message="No module scores available." />;
+    return <Empty message="No module scores available." />;
   }
   const moduleDescriptions: Record<string, string> = {
     "1": "Administrative Information",
@@ -405,14 +409,14 @@ function ModuleCards({ modules }: { modules: ModuleScore[] }) {
     "5": "Clinical Study Reports",
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="sr-module-grid">
       {modules.map((ms) => (
         <div key={ms.module} className="sr-module-card">
           <div className="sr-module-header">
             <div>
               <div className="sr-module-title">
-                Module {ms.module}
-                <span className="sr-module-desc">{moduleDescriptions[ms.module] ?? ""}</span>
+                <span className="sr-module-num">{ms.module}</span>
+                {moduleDescriptions[ms.module] ?? `Module ${ms.module}`}
               </div>
             </div>
             <div className="sr-module-score-pct">
@@ -480,7 +484,7 @@ function GapsTab({
       </div>
 
       {gaps.length === 0 ? (
-        <Empty icon="✅" message="No gaps match the current filter." />
+        <Empty message="No gaps match the current filter." />
       ) : (
         <div className="sr-table-wrap">
           <table className="sr-table" aria-label="Gap list">
@@ -637,7 +641,7 @@ function RequirementsTab({
 }: RequirementsTabProps) {
   if (loading) return <Loading text="Loading requirement matrix…" />;
   if (error) return <ErrorPanel message={error} onRetry={onRetry} />;
-  if (!requirements) return <Empty icon="📋" message="Requirements matrix will load when you switch to this tab." />;
+  if (!requirements) return <Empty message="Requirements matrix will load when you switch to this tab." />;
 
   const filtered = requirements.mappings.filter((m) => {
     const modFromId = m.requirement_id.match(/CTD-(\d)/)?.[1];
@@ -679,7 +683,7 @@ function RequirementsTab({
       </div>
 
       {filtered.length === 0 ? (
-        <Empty icon="📋" message="No requirements match the current filter." />
+        <Empty message="No requirements match the current filter." />
       ) : (
         <div className="sr-table-wrap">
           <table className="sr-table" aria-label="Requirement matrix">
