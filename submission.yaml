@@ -9,12 +9,12 @@ team:
     name: "Saniya Khatun Shaikh"
     email: "25bsit117@charusat.edu.in"
   members:
-    - name: ""
-      email: ""
-    - name: ""
-      email: ""
-    - name: ""
-      email: ""
+    - name: "Vidhi Shah"
+      email: "25bsit116@charusat.edu.in"
+    - name: "Darshan Solanki"
+      email: "25bca220@charusat.edu.in"
+    - name: "Khushi Patel"
+      email: "25bsit076@charusat.edu.in"
 
 submission:
   title: "SafetyReady"
