@@ -11,7 +11,7 @@
 | **Team Name** | Parallaxa |
 | **Track** | AI |
 | **Team Lead** | Saniya Khatun Shaikh — 25bsit117@charusat.edu.in |
-| **Members** | _(add team member names here)_ |
+| **Members** | Vidhi Shah, Darshan Solanki, Khushi Patel |
 
 ---
 
@@ -86,7 +86,7 @@ See [`docs/setup-guide.md`](docs/setup-guide.md) for the full tested guide. Quic
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/[your-repo]/bob-ai-hackathon-parallaxa.git
+git clone https://github.com/sancryption/bob-ai-hackathon-parallaxa.git
 cd bob-ai-hackathon-parallaxa
 
 # 2. Backend
